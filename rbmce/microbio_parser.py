@@ -1,7 +1,5 @@
 
-#### updated at 7.21.21 to consolidate code and use regex_list_parser() in most parsing functions. this also returns a list of all captures rather than just the last capture. 
-### as of 7/21/21 still needs to be made compatable with the latex output and solve the multi-class problem. 
-
+### main functions comprising the rule-based microbiology clinical concept extractor (RBMCE) 
 
 
 import pandas as pd
@@ -11,12 +9,11 @@ import numpy as np
 import pathlib
 import re
 import sys, warnings
-#import xlrd
 from datetime import date
 
 import time
-from parameters import *
-
+from .parameters import *
+from .regex_blocks import species_regex_list
 
 
 ##### parsing rows and preparing df:
@@ -170,7 +167,7 @@ def regex_list_capture(df, regex_list, text_col_main, capture_col,
     make a dataframe of rows vs regex with values = capture groups, and assign values to the 
     origional dataframe w/ the list of regex captured, and possibly list of regex groups used.
     """
-    from regex_blocks import staph_regex_dic
+    from .regex_blocks import staph_regex_dic
     
     
     ### making # of boolean lists of length df for each entry in negative regex list
@@ -201,7 +198,6 @@ def regex_list_capture(df, regex_list, text_col_main, capture_col,
         df.loc[bool_list[i], 'regex_text']=regex_list[i]
         df.loc[bool_list[i], 'regex_source']=regex_block
     
-    #display(capture_df2)    
     df_list = capture_df.values.tolist()
     df[capture_col]=[[x for x in y if x!='not_captured'] for y in df_list]
        
@@ -221,7 +217,7 @@ def culture_abbreviation_map(df, text_col):
     changes the value for the most prevelent abbreviations when available, else retain current value. 
     value_map_dic2 looks for most prevelent bacteria in an abbreviated species format (e. coli) to map to full name format (escherichia coli). note the casing is preserved in teh string besides the substitution.
     """
-    from regex_blocks import value_map_dict, value_map_dict2
+    from .regex_blocks import value_map_dict, value_map_dict2
     
     mapped=df[text_col].map(value_map_dict)
     df.loc[mapped.notna(),text_col]=mapped[mapped.notna()]
@@ -244,7 +240,7 @@ def negative_classifier(df, text_col,result_col='result_binary',species_name='sp
         df with result_col, species_name, and regex_capture columns added. 
     """
     
-    from regex_blocks import negative_regex_list,yeast_regex_list, virus_regex_list
+    from .regex_blocks import negative_regex_list,yeast_regex_list, virus_regex_list
     
     ##negative captures
     df= regex_list_capture(df,
@@ -289,7 +285,10 @@ def negative_classifier(df, text_col,result_col='result_binary',species_name='sp
 ###### extracts that do not influence classification: quantatitive information, specimen/sampletype. 
 
 def general_quant_extract(df, text_col):
-    from regex_blocks import quant_regex_list
+    """
+    fxn to extract general quantitative information from report, such as 10,000 cfu/ml. This info is difficult to tie to an exact species capture so for the time being the general quantitative info is extracted.
+    """
+    from .regex_blocks import quant_regex_list
     
     df= regex_list_capture(df,
                      quant_regex_list,
@@ -300,7 +299,10 @@ def general_quant_extract(df, text_col):
     return(df)
     
 def specimen_extract(df, text_col):
-    from regex_blocks import specimen_regex_list
+    """
+    untested feature to try and extract specimen, aka sample type, from report. useful for cases where specimen is not a descrete info, as in our source system.
+    """
+    from .regex_blocks import specimen_regex_list
     
     df= regex_list_capture(df,
                      specimen_regex_list,
@@ -316,7 +318,10 @@ def specimen_extract(df, text_col):
 
 
 def selective_append(x, element):
-    from regex_blocks import staph_name_dic
+    """
+    simple append function with some if/then logic, slightly larger than ideal in a lamba fxn. 
+    """
+    from .regex_blocks import staph_name_dic
     if type(x)== list:
          x.append(staph_name_dic[element])
 
@@ -326,7 +331,7 @@ def staph_classifier(df, coag_neg_correction,  text_col, result_col, override_re
     repeat positive cultures for a confirmed positive. this function parses text for various staph regex and assigns species, binary classification, regex used, and regex category to parsed rows. 
     staph_coag_neg_correction() can be used as a followup to change neg_staph binary results -> pos_staph if duplicate neg_staph are present. 
     """
-    from regex_blocks import staph_regex_dic, staph_classification_dic
+    from .regex_blocks import staph_regex_dic, staph_classification_dic
 
     for element in staph_regex_dic.keys():
         key_bool= df[text_col].apply( lambda x: re.search(staph_regex_dic[element], str(x).lower()) != None)      
@@ -380,7 +385,7 @@ def unspecific_pos_cat(df, text_col):
     """
     classifies text into non-specific positive, these are often overwritten by subsequent more specific when possible
     """
-    from regex_blocks import pos_quant_list, pos_qual_list
+    from .regex_blocks import pos_quant_list, pos_qual_list
 
     df= regex_list_capture(df,
                  pos_quant_list,
@@ -403,7 +408,7 @@ def pos_species_cat(df, text_col, notetype_col=None, override_result_bool=False)
     """
     classifies text into species-specific positives, these are often overwritten by language signifying unclarity downstream
     """
-    from regex_blocks import species_regex_list
+    from .regex_blocks import species_regex_list
         
     df= regex_list_capture(df,
              species_regex_list,
@@ -420,7 +425,7 @@ def unclear_cat(df, text_col):
     """
     classifies text into uncertain categories based on presence of language signifying unclarity
     """
-    from regex_blocks import unclear_regex_list
+    from .regex_blocks import unclear_regex_list
         
     df= regex_list_capture(df,
              unclear_regex_list,
@@ -435,7 +440,7 @@ def likelyneg_cat(df, text_col,override_result_bool=False):
     """
     classifies text into uncertain categories based on presence of language signifying unclarity
     """
-    from regex_blocks import likely_negative_regex_list
+    from .regex_blocks import likely_negative_regex_list
                
     df= regex_list_capture(df,
          likely_negative_regex_list,
@@ -448,7 +453,8 @@ def likelyneg_cat(df, text_col,override_result_bool=False):
 
 
 def df_result_binarize(df,staph_bool=True):
-    """ mapping enumerated result_binary values into more discrete binary values (0=neg/unclear/null; 1=likely positive)
+    """ 
+    mapping enumerated result_binary values into more discrete binary values (0=neg/unclear/null; 1=likely positive)
     """
 
     neg_binary_bool=df['result_binary'].apply(lambda x: re.search(r'neg',str(x).lower()) is not None)
@@ -498,7 +504,7 @@ def final_multiorg_adjustment(df,result_col):
     ### adding multiple_organisms present
     t1= df[['pos_qual_capt']].explode('pos_qual_capt')#[UC_culture_cat['pos_qual_capt'].explode()=='multiple organisms present']
     t1_index=t1[t1['pos_qual_capt']=='multiple organisms present'].index
-    #t2=df.loc[t1_index]
+
     df.loc[t1_index,'result_num']=1 #adjusting the resultnum to be positive if multiorg is present. 
     df.loc[t1_index,result_col]='multiorg_pos1'
 
@@ -514,12 +520,15 @@ def add_review_suggestion_flags(df,
                                 text_col, #species_list=species_regex_list, 
                                 result_col):
     
-    
+    """
+    attempt to add on some logical "manual review suggested" flags onto cases to reduce false positive/negative classifications. currently
+    flags cases with "flora" in text, >=1 species capture, and currently classifid as negative. inspired by some challenging to classify cases in our 2d validation set. 
+    """
         ### flora flag testing
     flora_bool1=df[text_col].apply(lambda x: re.search(r'flora',str(x).lower())is not None)
     flora_bool2=df['species_capt'].apply(lambda x: len(x))>0
     flora_bool3= df['result_num']==0
-    flora_flag= (flora_bool1) & (flora_bool2) & (flora_bool3) #n=534 rows. 
+    flora_flag= (flora_bool1) & (flora_bool2) & (flora_bool3) 
     
     df['flora_flag']=0
     df.loc[flora_flag,'flora_flag']=1
@@ -528,7 +537,10 @@ def add_review_suggestion_flags(df,
 
 
 def OHDSI_ID_MAP(x):
-    from OHDSI_MAP import OHDSI_MAP
+    """
+    function to map OHSDI concept ID based on the dictionary in OHDSI_MAP
+    """
+    from .OHDSI_MAP import OHDSI_MAP
     if x in OHDSI_MAP.keys():
         value= OHDSI_MAP[x]
     else:
@@ -536,7 +548,10 @@ def OHDSI_ID_MAP(x):
     return(value)
 
 def OHDSI_NAME_MAP(x):
-    from OHDSI_MAP import OHDSI_NAME
+    """
+    function to map OHSDI concept names based on the dictionary in OHDSI_MAP
+    """
+    from .OHDSI_MAP import OHDSI_NAME
     if x in OHDSI_NAME.keys():
         value= OHDSI_NAME[x]
     else:
@@ -570,7 +585,7 @@ def result_categorize_main(df, text_col_main='parsed_note',
     likely_neg_to_neg_override: default False for likelyneg, likelyneg captures impact classification -> negative. if True, likelyneg captures don't influence classification. 
 
     """
-    from regex_blocks import species_regex_list
+#     from .regex_blocks import species_regex_list
     import time  
     
     print('step0.1')

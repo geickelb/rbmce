@@ -1,4 +1,5 @@
-from microbio_parser import *    
+from .microbio_parser import *    
+from .regex_blocks import species_regex_list
 import pandas as pd
 pd.set_option('display.max_colwidth', None)
 
@@ -8,7 +9,6 @@ def MCE_StrIn(str_input, staph_neg_correction=False, likely_neg_to_neg_override=
     function to take in a string argument, run concept extraction workflow, and display results
 
     """
-    from regex_blocks import species_regex_list
     import time  
     
     d={'parsed_note':[str_input],
