@@ -11,11 +11,11 @@ import sys, warnings
 #import xlrd
 from datetime import date
 
-from microbio_parser import *
+from .rbmce import *
 import time  
 
 
-from parameters import *
+from .parameters import *
 
 
 

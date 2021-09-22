@@ -9,10 +9,10 @@ import numpy as np
 import pathlib
 import re
 import sys, warnings
-from datetime import date
+# from datetime import date
 
 import time
-from .parameters import *
+# from .parameters import *
 from .regex_blocks import species_regex_list
 
 
@@ -49,15 +49,20 @@ def drop_notetypes(notes, text_col):
 def parse_rows(note_text,verbose=False, Return_bool=True, QC_mode=False, granular_newline=True):
 
     """
-    function: parses gross microbiology notes into digestable rows to later classify.
-    input: (string) raw microbiology note text in a single column. 
-        NOTE: currently utilizes carriage returns/newline character patterns most often. utility of regular expressions here is highly dependent upon note format and structure. 
-
-    output: (list of strings) list of parsed report rows
+    function: parses gross microbiology notes into digestable rows to later classify. this is an example for parsing that worked in 1 of our 4 datasets, but milage may vary.
     
-    QC_mode/verbose: (bool) optional parameters for debugging purposes useful in adding or modifying regular expressions
-    granular_newline: (bool) parameter for a more aggressive row parsing of headings and subheadings. returns more rows than if False. 
-    Return_bool: (bool) bool to output list of strings. useful in debugging. 
+    
+            Parameters:
+                    note_text (int): aw microbiology note text in a single column.
+            kwargs:
+                    verbose (bool): optional parameters for debugging purposes useful in adding or modifying regular expressions
+                    Return_bool (bool): bool to output list of strings. useful in debugging. 
+                    QC_mode (bool): optional parameters for debugging purposes useful in adding or modifying regular expressions
+                    granular_newline (bool): parameter for a more aggressive row parsing of headings and subheadings. returns more rows than if False. 
+
+            Returns:
+                    binary_sum (list of strings): list of parsed report rows 
+    
     """
     
     if type(note_text)!=pd.Series:
@@ -158,21 +163,31 @@ def df_concat(por,por_unclass):
 
 
 def regex_list_capture(df, regex_list, text_col_main, capture_col,
-                       result_col='result_binary', regex_block='unspecified_regex_block',
+                      regex_block='unspecified_regex_block',
                       regex_col=None,
-                       default=True, QC=True,
                       override_result=False):
     """
-    a generalized framework to iterate through a list of regular expressions, apply them to a text column ,
+    function: a generalized framework to iterate through a list of regular expressions, apply them to a text column ,
     make a dataframe of rows vs regex with values = capture groups, and assign values to the 
     origional dataframe w/ the list of regex captured, and possibly list of regex groups used.
+    
+            Parameters:
+                    df (dataframe): input dataframe of microbiology notes
+                    regex_list (list): regex list to iterate through with relevant captures. see regex_blocks.py for lists.
+                    text_col_main (str): name of the column where microbio reports are stored (parsed if available)
+                    capture_col (str): name of the column where regex captures are stored
+            kwargs:
+                    regex_block (str): name of the label to add to "regex_source", to help audit the regex block responsible for infection classification.
+                    regex_col (str): default=None, if not none, adds another column recording the raw regular xpressions with a capture hit. 
+                    override_result (bool): used in the negative infection classification path to record species but not change 'result_binary'
+
+            Returns:
+                    df (dataframe): input datafram with ['regex_text','regex_source','capture'] columns added and populated. 
     """
     from .regex_blocks import staph_regex_dic
     
-    
     ### making # of boolean lists of length df for each entry in negative regex list
     bool_list=[[False for i in range(len(df[text_col_main]))] for x in range(len(regex_list))]
-    #quant_capture_list=[['not_captured' for i in range(len(df[text_col_main]))] for x in range(len(regex_list))]
 
     capture_df= pd.DataFrame( index=df.index, columns= regex_list)
     capture_df[capture_df.isna()]='not_captured'
@@ -203,9 +218,6 @@ def regex_list_capture(df, regex_list, text_col_main, capture_col,
        
     ### adding spot for list of regex expressions that were triggered
     if regex_col!=None:
-#         regex_activated=[list(capture_df.loc[:,[x!='not_captured' for x in y]]) for y in df_list]
-#         df[regex_col]=regex_activated  
-                ##7/27 fix to improve performance 100x on above line, which was a bottleneck that scaled non-linearly with df size. 
         t=np.where(capture_df != 'not_captured', capture_df.columns,'').tolist()
         df[regex_col]= [[x for x in y if x!='']for y in t]
         
@@ -215,7 +227,7 @@ def regex_list_capture(df, regex_list, text_col_main, capture_col,
 def culture_abbreviation_map(df, text_col):
     """
     changes the value for the most prevelent abbreviations when available, else retain current value. 
-    value_map_dic2 looks for most prevelent bacteria in an abbreviated species format (e. coli) to map to full name format (escherichia coli). note the casing is preserved in teh string besides the substitution.
+    value_map_dic2 looks for most prevelent bacteria in an abbreviated species format (e. coli) to map to full name format (escherichia coli). note the casing is preserved in the string besides the substitution.
     """
     from .regex_blocks import value_map_dict, value_map_dict2
     
@@ -231,13 +243,15 @@ def culture_abbreviation_map(df, text_col):
 def negative_classifier(df, text_col,result_col='result_binary',species_name='species'):
     """
     function: first classification step, searches for blatent negative results and non-bacterial species. 
-    input:
-        df: (dataframe)
-        text_col: column with (parsed) microbio string to be classified 
-        result_col: name of the first, most granular enumerated classification result col added
-        species_name: (str) name of extracted species column to be added
-    output: 
-        df with result_col, species_name, and regex_capture columns added. 
+            Parameters:
+                    df (dataframe): input dataframe of microbiology notes
+                    text_col (str): column with (parsed) microbio string to be classified 
+            kwargs:
+                    result_col (str): name of the first, most granular enumerated classification result col added
+                    species_name: (str) name of extracted species column to be added
+            Returns: 
+                    df with result_col, species_name, and regex_capture columns added. 
+        
     """
     
     from .regex_blocks import negative_regex_list,yeast_regex_list, virus_regex_list
@@ -327,9 +341,20 @@ def selective_append(x, element):
 
 def staph_classifier(df, coag_neg_correction,  text_col, result_col, override_result=False):
     """
-    function: staphylococcus have a diverse set of bacteria with different clinical interpretations/manifestations/severity. Notably, coag negative staph are common contaminants and are often required to have 
-    repeat positive cultures for a confirmed positive. this function parses text for various staph regex and assigns species, binary classification, regex used, and regex category to parsed rows. 
-    staph_coag_neg_correction() can be used as a followup to change neg_staph binary results -> pos_staph if duplicate neg_staph are present. 
+    function: staphylococcus have a diverse set of bacteria with different clinical interpretations/manifestations/severity. Notably, coag negative staph are common contaminants and are often required to have repeat positive cultures for a confirmed positive. this function parses text for various staph regex and assigns species, binary classification, regex used, and regex category to parsed rows. staph_coag_neg_correction() can be used as a followup to change neg_staph binary results -> pos_staph if duplicate neg_staph are present. 
+    
+            Parameters:
+                    df (dataframe): input dataframe of microbiology notes
+                    coag_neg_correction(bool): if the coagulase negative correction is False, all staph pickups will be pos_staph rather than the staph_classification_dic value.
+                    result_col (str): name of the primary result column (default= 'result_binary')
+                    text_col (str): column with (parsed) microbio string to be classified 
+                    
+            kwargs:
+                    result_col (str): name of the first, most granular enumerated classification result col added
+                    species_name: (str) name of extracted species column to be added
+            Returns: 
+                    df (dataframe):  input dataframe with ['regex_text','regex_source','capture'] columns populated for the various staph species. 
+    
     """
     from .regex_blocks import staph_regex_dic, staph_classification_dic
 
@@ -499,7 +524,7 @@ def final_multiorg_adjustment(df,result_col):
     """
     adjusting final classification, and species_capt for those with the generalized multiple species present and no other info present. 
     ### taking the rows wwith a non-specific multipositive, and possibly some unclea rlanguage, and no species in species_capt. adding unspecified organisms to species list in this case. 
-    ### note: i wanted this in the microbio_parser.py but cant get a higher version of pd to run on the cmd.
+    
     """
     ### adding multiple_organisms present
     t1= df[['pos_qual_capt']].explode('pos_qual_capt')#[UC_culture_cat['pos_qual_capt'].explode()=='multiple organisms present']
@@ -517,7 +542,7 @@ def final_multiorg_adjustment(df,result_col):
 
 
 def add_review_suggestion_flags(df,
-                                text_col, #species_list=species_regex_list, 
+                                text_col,
                                 result_col):
     
     """
@@ -559,8 +584,9 @@ def OHDSI_NAME_MAP(x):
     return(value)
 
 
-def result_categorize_main(df, text_col_main='parsed_note', 
-                           staph_nunique_col='procedure_order_key',
+#changed from result_categorize_main-> rbmce
+def run(df, text_col_main='parsed_note', 
+                           staph_nunique_col='culture_id',#'procedure_order_key',
                            culture_id_main='visit_id', 
                            result_col_main='result_binary',
                            visit_id='visit_id', #this should be changed if there are multiple cultures per visit.
@@ -571,8 +597,7 @@ def result_categorize_main(df, text_col_main='parsed_note',
                           likely_neg_to_neg_override=False):
     
     """
-    retooled version of categorize 2 and 3 into same framework to help with more logical workflow.
-    uses 6 step parsing now:
+    function: execution function for all operations involved in the rule-based microbiology concept extractor. uses 6 step parsing:
     
     1: parses blatent negative results and non-bacterial species.
     2: splitting the already parsed negatives out so "negative for x" type notes aren't included in downstream parsings
@@ -582,10 +607,39 @@ def result_categorize_main(df, text_col_main='parsed_note',
     6: parses out any row with unclear language. eg "unable to determine presence or absence of staph..."
     staph_neg_correction: default True. True means the staph_neg correction runs, aka requires multiple instances of coag_neg to = outcome positive. False: all staph = Positive regardless of type or # of occurances.
     
+    
     likely_neg_to_neg_override: default False for likelyneg, likelyneg captures impact classification -> negative. if True, likelyneg captures don't influence classification. 
+    
+    
+    ***documntation in progress
+    
+    
+    
+            Parameters:
+                    df (dataframe): input dataframe of microbiology notes
+                    
+            kwargs:
+                    result_col (str): name of the first, most granular enumerated classification result col added
+                    text_col_main='parsed_note'
+                    staph_nunique_col='culture_id',#'procedure_order_key'
+                    culture_id_main='visit_id'
+                    result_col_main='result_binary'
+                    visit_id='visit_id' #this should be changed if there are multiple cultures per visit.
+                    staph_neg_correction=True
+                    notetype_main=None
+                    quant_col=None
+                    specimen_col=None
+                    likely_neg_to_neg_override=False
+                    
+                    
+                    
+            Returns: 
+                    df (dataframe):  input dataframe with ['regex_text','regex_source','capture'] columns populated for the various staph species. 
+    
+    
 
     """
-#     from .regex_blocks import species_regex_list
+    from .regex_blocks import species_regex_list
     import time  
     
     print('step0.1')
@@ -677,13 +731,7 @@ def result_categorize_main(df, text_col_main='parsed_note',
     df_neg_exemption= df_neg[df_neg[culture_id_main].isin(exemption_cid)].copy()
     df_neg= df_neg[~df_neg[culture_id_main].isin(exemption_cid)].copy()
 
-    
-    df=df_concat(df, df_neg_exemption)
-     
-    
-    #####todo figure out why some negs are making it over in the concat that are not in exemption. 
-    
-
+    df=df_concat(df, df_neg_exemption)    
 
     print('n= {} rows ({} unique cultures) added back from the neg list via virus/yeast + bacerial species exemption'.format(len(df_neg_exemption),df_neg_exemption[culture_id_main].nunique()))
     

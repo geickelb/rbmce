@@ -1,4 +1,22 @@
+Metadata-Version: 2.1
+Name: rbmce
+Version: 0.0.1
+Summary: a rule-based clinical concept extraction tool to capture microorganisms and estimate infection status on semi-structured microbiology culture reports.
+Home-page: https://github.com/geickelb/rbmce
+Author: Garrett Eickelberg
+Author-email: garrett.eickelberg@northwestern.edu
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6.8
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+
 <h1 align="center">
+
+Welcome to new project 👋
 
 </h1>
 <p>
@@ -9,22 +27,12 @@
 
 </p>
 
-### RBMCE (Rule-Based Microbiology Concept Extractor):
->This code was developed to provide an open-source python package to extract clinical concepts from free-text semi-structured microbiology reports. The two primary outputs for this package are (1) an binary estimation of patient bacterial infection status and (2) a list of all clinically relevant microorganisms found in the report. These outputs were validated on two independent datasets and achieved f-1 scores over 0.95 on both outputs when compared to expert review. Full details on background, algorithm, and validation results can be seen at our paper here: (currently being written, will update once submitted to archive).
-
-### 🏠 [Homepage](https://github.com/geickelb/rbmce)
-### ✨ [package](https://pypi.org/project/rbmce/)
-
-## Requirements
-```sh
-* python >=3.6.8
-* pandas >=0.25.0
-
-```
-
+> new project
+### 🏠 [Homepage](https://github.com/pedroermarinho/markdown-readme-generator#readme)
+### ✨ [Demo](https://github.com/pedroermarinho/markdown-readme-generator#readme)
 ## Install
 ```sh
-pip install rbmce
+pip3 install markdown-readme-generator
 ***add
 
 ```
@@ -64,3 +72,4 @@ This project is [MIT](https://github.com/pedroermarinho/markdown-readme-generato
 
 ---
 _This README was created with the [markdown-readme-generator](https://github.com/pedroermarinho/markdown-readme-generator)_
+

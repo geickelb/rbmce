@@ -1,25 +1,24 @@
-from .microbio_parser import *    
+from .rbmce import *    
 from .regex_blocks import species_regex_list
 import pandas as pd
 pd.set_option('display.max_colwidth', None)
 
-def MCE_StrIn(str_input, staph_neg_correction=False, likely_neg_to_neg_override=True):
+def rbmce_str_in(str_input, staph_neg_correction=False, likely_neg_to_neg_override=True):
     
     """
     function to take in a string argument, run concept extraction workflow, and display results
 
     """
-    import time  
     
     d={'parsed_note':[str_input],
     'culture_id':1,
    'visit_id':1
       }
-    df=pd.DataFrame(data=d)
+    df=pd.DataFrame(data=d, index=[1])
        
-    df= result_categorize_main(df, 
+    df= run(df, 
                                        text_col_main='parsed_note',
-                                       staph_nunique_col='procedure_order_key',
+                                       staph_nunique_col='culture_id',
                                        result_col_main='result_binary',
                                        culture_id_main='visit_id',
                                        visit_id='visit_id', 
@@ -41,10 +40,29 @@ def MCE_StrIn(str_input, staph_neg_correction=False, likely_neg_to_neg_override=
     
     
 def main():
-    str_input = input("Enter note text to process :")
-    if str_input is None:
-        str_input='No Salmonella, Shigella, Campylobacter, Aeromonas or Plesiomonas isolated.'
-    MCE_StrIn(str_input)
+    import sys
+    
+    n = len(sys.argv[1:])
+#     print(n)
+#     print(sys.argv[1:])
+    
+    arg_processed=''
+    if n>1:
+        for i in range(1, n+1):
+            arg_string= str(sys.argv[i]).strip()
+            arg_processed= arg_processed + ' ' + arg_string
+            
+    else:
+        arg_processed= sys.argv[1]
+
+        
+    rbmce_str_in(arg_processed)
+#     print(arg_processed)
+    
+#     str_input = input("Enter note text to process :")
+#     if str_input is None:
+#         str_input='No Salmonella, Shigella, Campylobacter, Aeromonas or Plesiomonas isolated.'
+#     rbmce_str_in(str_input)
     
     
     

@@ -1,4 +1,6 @@
 
+#### this is an eample workflow I used to run rbcm_annotate
+
 import pandas as pd
 import os
 import numpy as np
@@ -9,11 +11,11 @@ import sys, warnings
 #import xlrd
 from datetime import date
 
-from microbio_parser import *
+from .rbmce import *
 import time  
 
 
-from parameters import *
+from .parameters import *
 
 
 
@@ -42,7 +44,7 @@ def latex_report(annotated_df, df_name, save_directory, specified_date, n_latex_
     
     
     
-def run_CME()
+# def run_CME()
 
 
 

@@ -1,7 +1,5 @@
 <h1 align="center">
 
-Welcome to new project 👋
-
 </h1>
 <p>
 <img alt="Version" src="https://img.shields.io/badge/version-0.0.1-blue.svg?cacheSeconds=2592000" />
@@ -11,29 +9,59 @@ Welcome to new project 👋
 
 </p>
 
-> new project
-### 🏠 [Homepage](https://github.com/pedroermarinho/markdown-readme-generator#readme)
-### ✨ [Demo](https://github.com/pedroermarinho/markdown-readme-generator#readme)
+### RBMCE (Rule-Based Microbiology Concept Extractor):
+>This code was developed to provide an open-source python package to extract clinical concepts from free-text semi-structured microbiology reports. The two primary outputs for this package are (1) an binary estimation of patient bacterial infection status and (2) a list of all clinically relevant microorganisms found in the report. These outputs were validated on two independent datasets and achieved f-1 scores over 0.95 on both outputs when compared to expert review. Full details on background, algorithm, and validation results can be seen at our paper here: (currently being written, will update once submitted to archive).
+
+### 🏠 [Homepage](https://github.com/geickelb/rbmce)
+### ✨ [package](https://pypi.org/project/rbmce/)
+
+## Requirements
+```sh
+* python >=3.6.8
+* pandas >=0.25.0
+
+```
+
 ## Install
 ```sh
-pip3 install markdown-readme-generator
+pip install rbmce
 ***add
 
 ```
 
 ## Usage
+#### Inline:
+```sh
+import rbmce
+import pandas as pd
+d={'parsed_note': 'No Salmonella, Shigella, Campylobacter, Aeromonas or Plesiomonas isolated.', 'culture_id': 1, 'visit_id': 1}
+df=pd.DataFrame(data=d, index=[1])
+rbmce.run(df)
+***add
+
+```
+#### Command Line:
 ```sh
 mrgenerator-cli
 ***add
 
 ```
 
+
 ## Run tests
+#### Inline 
 ```sh
-python3 run.py
-***add
+from rbmce import debug
+test_str='No Salmonella, Shigella, Campylobacter, Aeromonas or Plesiomonas isolated.'
+debug.rbmce_str_in(test_str)
 
 ```
+#### Command Line:
+```sh
+python -m rbmce.debug 'No Salmonella, Shigella, Campylobacter, Aeromonas or Plesiomonas isolated.'
+
+```
+
 
 ## Author
 👤 **Garrett Eickelberg**
