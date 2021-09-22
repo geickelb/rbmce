@@ -143,6 +143,8 @@ cython_debug/
 
 # files to hide
 /rbmce/ignore_files/*
+/rbmce/ignore_files
 /formatted_data/*
 /ignore_files/*
+untitled.txt
 
