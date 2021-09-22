@@ -25,11 +25,23 @@
 ## Install
 ```sh
 pip install rbmce
-***add
-
 ```
 
 ## Usage
+
+#### Recommended datastructure:
+
+
+the rbcme.run() function expects a pandas dataframe with the following elements (associated column names can be specified as kwargs):
+
+* parsed_note: 
+    * microbiology report txt in either a raw or (**perferable) chopped up into components (eg gram stain/growth report/ab susceptability)
+* cuture_id: 
+    * a primary key tied to a given sample/specimen + microbiological exam order. 
+    * Often a microbiology order can be tied to numerous components (eg gram stain/growth report/ ab susceptability). additionally these can be appended to same report or added as a new report tied to same sample + order. all of these tied to a sample+order should share same culture_id
+* visit_id:
+    * in some datasets
+
 #### Inline:
 ```sh
 import rbmce
@@ -37,13 +49,11 @@ import pandas as pd
 d={'parsed_note': 'No Salmonella, Shigella, Campylobacter, Aeromonas or Plesiomonas isolated.', 'culture_id': 1, 'visit_id': 1}
 df=pd.DataFrame(data=d, index=[1])
 rbmce.run(df)
-***add
 
 ```
 #### Command Line:
-```sh
-mrgenerator-cli
-***add
+```
+see rbcme_run_example.py for example of an executable python file to import, format, process w/ rbmce, and save outputs (annotated dataframe, markdown_summary file)
 
 ```
 
@@ -73,14 +83,14 @@ python -m rbmce.debug 'No Salmonella, Shigella, Campylobacter, Aeromonas or Ples
 
 
 ## 🤝 Contributing
-Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/pedroermarinho/markdown-readme-generator/issues). You can also take a look at the [contributing guide](https://github.com/pedroermarinho/markdown-readme-generator/blob/master/CONTRIBUTING.md)
+Contributions, issues and feature requests are welcome!<br />Feel free to check [issues page](https://github.com/geickelb/rbmce/issues). You can also take a look at the [contributing guide](https://github.com/pedroermarinho/markdown-readme-generator/blob/master/CONTRIBUTING.md)
 ## Show your support
 Give a ⭐️ if this project helped you!
 ## Credits
 **[Markdown Readme Generator](https://github.com/pedroermarinho/markdown-readme-generator)**
 ## 📝 License
 
-This project is [MIT](https://github.com/pedroermarinho/markdown-readme-generator/blob/master/LICENSE) licensed.
+This project is [MIT](https://github.com/geickelb/rbmce/blob/main/LICENSE.txt) licensed.
 
 ---
 _This README was created with the [markdown-readme-generator](https://github.com/pedroermarinho/markdown-readme-generator)_

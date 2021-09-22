@@ -491,6 +491,28 @@ likely_negative_regex_list=[r'\b(few|rare)\b',
 
 
 
+###### common contaminants: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7108105/ 
+
+###"eg, coagulase-negative staphylococci, viridans group streptococci, diphtheroids, Bacillus spp other than B. anthracis...""
+###"Certain organisms that are part of the indigenous skin and mucous membrane microflora, such as coagulase-negative staphylococci, Corynebacterium spp, and viridans streptococci, are generally considered nonpathogenic"
+
+common_contaminants=[
+    r'viridans[ ]?(strep)?',
+    r'diphtheroids',
+    r'corynebacterium',
+#     r'\b(bacillus)\s(?!anthracis)'
+    r"bacillus brevis",
+    r"bacillus cereus",
+    r"bacillus fusiformis",
+    r"bacillus licheniformis",
+    r"bacillus megaterium",
+    r"bacillus mycoides",
+    r"bacillus stearothermophilus",
+    r"bacillus subtilis",
+    r"bacillus thuringiensis",
+]
+
+
 #####wiki_clinically_meaningful_bacteria: list of regular expressions designed to capture all bacteria listed in wikipedia's page of clinically important bacteria. https://en.wikipedia.org/wiki/List_of_clinically_important_bacteria
 
 wiki_clinically_meaningful_bacteria=[

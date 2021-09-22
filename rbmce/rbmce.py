@@ -178,6 +178,7 @@ def regex_list_capture(df, regex_list, text_col_main, capture_col,
                     capture_col (str): name of the column where regex captures are stored
             kwargs:
                     regex_block (str): name of the label to add to "regex_source", to help audit the regex block responsible for infection classification.
+                        NOTE: infection_estimation is sensitive to 'pos' and 'neg' labels in this column. 
                     regex_col (str): default=None, if not none, adds another column recording the raw regular xpressions with a capture hit. 
                     override_result (bool): used in the negative infection classification path to record species but not change 'result_binary'
 
@@ -202,13 +203,14 @@ def regex_list_capture(df, regex_list, text_col_main, capture_col,
         capture_df.loc[bool_list[i], col_list[i]]=capture
         capture_df2.loc[bool_list[i], col_list[i]]='{}{}'.format(regex_block, i)
         
-        if override_result==True: #storing the current result_col value to overwrite it after normal operation if override==True. Written this way such that normal use doesn't incure more operations.
-             stored_value=df.loc[bool_list[i], result_col]
+        #storing the current result_col value to overwrite it after normal operation if override==True. Written this way such that normal use doesn't incure more operations.
+        if override_result==True: 
+             stored_value=df.loc[bool_list[i], 'result_binary']
                 
-        df.loc[bool_list[i], result_col]='{}{}'.format(regex_block, i)
+        df.loc[bool_list[i], 'result_binary']='{}{}'.format(regex_block, i)
         
         if override_result==True:
-             df.loc[bool_list[i], result_col]=stored_value
+             df.loc[bool_list[i], 'result_binary']=stored_value
                 
         df.loc[bool_list[i], 'regex_text']=regex_list[i]
         df.loc[bool_list[i], 'regex_source']=regex_block
@@ -339,18 +341,17 @@ def selective_append(x, element):
     if type(x)== list:
          x.append(staph_name_dic[element])
 
-def staph_classifier(df, coag_neg_correction,  text_col, result_col, override_result=False):
+def staph_classifier(df, coag_neg_correction,  text_col, result_col='result_binary', override_result=False):
     """
-    function: staphylococcus have a diverse set of bacteria with different clinical interpretations/manifestations/severity. Notably, coag negative staph are common contaminants and are often required to have repeat positive cultures for a confirmed positive. this function parses text for various staph regex and assigns species, binary classification, regex used, and regex category to parsed rows. staph_coag_neg_correction() can be used as a followup to change neg_staph binary results -> pos_staph if duplicate neg_staph are present. 
+    function: staphylococcus have a diverse set of bacteria with different clinical interpretations/manifestations/severity. Notably, coag negative staph are common contaminants and are often required to have repeat positive cultures for a confirmed positive. this function parses text for various staph regex and assigns species, binary classification, regex used, and regex category to parsed rows. contamination_correction() can be used as a followup to change neg_staph binary results -> pos_staph if duplicate neg_staph are present. 
     
             Parameters:
                     df (dataframe): input dataframe of microbiology notes
                     coag_neg_correction(bool): if the coagulase negative correction is False, all staph pickups will be pos_staph rather than the staph_classification_dic value.
-                    result_col (str): name of the primary result column (default= 'result_binary')
                     text_col (str): column with (parsed) microbio string to be classified 
                     
             kwargs:
-                    result_col (str): name of the first, most granular enumerated classification result col added
+                    result_col (str): name of the primary result column (default= 'result_binary')
                     species_name: (str) name of extracted species column to be added
             Returns: 
                     df (dataframe):  input dataframe with ['regex_text','regex_source','capture'] columns populated for the various staph species. 
@@ -393,17 +394,58 @@ def staph_classifier(df, coag_neg_correction,  text_col, result_col, override_re
     return(df)
     
 
-def staph_coag_neg_correction(df, text_col, result_col, time_col='procedure_order_key', culture_id='visit_id'):
+def contamination_correction(df, text_col, result_col='result_binary', contamination_marking='neg_staph', culture_id='procedure_order_key', visit_id='visit_id'):
     """
-    groups df by a visit/encounter identifier and counts the # of cultures classified as neg_staph. if >1, then changes the neg staph to a positive value. 
-    this is performed to mirror the practice of requiring multiple neg_staph cultures to be considered positive (to rule out contamination).  
+    function: optional function in rbmce workflow. groups df by a visit/encounter identifier and counts the # of culture_id's classified as "contamination_marking" (default negstaph from staph_classifier()). if >1, then changes the neg_staph (or other possible contamination marking) to a positive value. This is performed to mirror the practice of requiring multiple  cultures to be considered positive (to rule out contamination).  
+    Currently rbmce is only setup to check for coag_negative staph contamination. To scale this across other common contaminants, a 
+    Currently this function works by 
+    This function is currently only able to address contamination regarding coag-negative staph. reliant on staph_classifier() being run before it and, since staph_classifier() adds a unique 'neg_staph' label to the result column
+    
+            Parameters:
+                    df (dataframe): input dataframe of microbiology notes
+                    result_col (str): name of the primary result column (default= 'result_binary')
+                    text_col (str): column with (parsed) microbio string to be classified 
+                    
+            kwargs:
+                    time_col (str): 
+                    species_name: (str) name of extracted species column to be added
+            Returns: 
+                    df (dataframe):  input dataframe with ['regex_text','regex_source','capture'] columns populated for the various staph species. 
     
     """
-    many_negstaph_bool=(df.loc[df[result_col]=='neg_staph',:].groupby(culture_id)[time_col].nunique()>1)  #n=30 -> 274 when changed from order-> result_datetime
-    negstaph_vid=many_negstaph_bool[many_negstaph_bool].reset_index()[culture_id].to_list()
+    many_negstaph_bool=(df.loc[df[result_col]==contamination_marking,:].groupby(visit_id)[culture_id].nunique()>1) 
+    negstaph_vid=many_negstaph_bool[many_negstaph_bool].reset_index()[visit_id].to_list()
 
-    df.loc[(df[culture_id].isin(negstaph_vid)) &(df[result_col]=='neg_staph'),result_col]='repeat_coagN_staph_pos'
+    df.loc[(df[visit_id].isin(negstaph_vid)) &(df[result_col]==contamination_marking),result_col]='non_contamination_pos' #'repeat_coagN_staph_pos'
     return(df)
+
+
+    
+
+def contamination_correction_generalized(df, text_col, result_col='result_binary', contamination_marking='neg_staph', culture_id='procedure_order_key', visit_id='visit_id'):
+        """
+        function: an untested implementation of a function a user could implement to address all common contaminants 
+        
+        *** doc in progress
+        """
+    
+        #common_contaminant 
+        df= regex_list_capture(df,
+                             common_contaminants,
+                             text_col,
+                             capture_col='common_contam_capt',
+                             regex_block='common_contam_infection_neg',
+                              regex_col='common_contam_regex')
+        
+        contam_bool= df.loc[df[result_col].apply(lambda x: re.search(r'common_contam',str(x).lower())!= None)]
+
+        contam_followup_bool=(df.loc[contam_bool,:].groupby(visit_id)[culture_id].nunique()>1)
+        contam_org_pos_vid=contam_followup_bool[contam_followup_bool].reset_index()[visit_id].to_list()
+        df.loc[(df[visit_id].isin(contam_org_pos_vid)) & (contam_bool),result_col]='non_contamination_pos'
+
+
+
+
 
 
 def unspecific_pos_cat(df, text_col):
@@ -520,7 +562,7 @@ def df_result_binarize(df,staph_bool=True):
     return(df)
 
 
-def final_multiorg_adjustment(df,result_col):
+def final_multiorg_adjustment(df,result_col='result_binary'):
     """
     adjusting final classification, and species_capt for those with the generalized multiple species present and no other info present. 
     ### taking the rows wwith a non-specific multipositive, and possibly some unclea rlanguage, and no species in species_capt. adding unspecified organisms to species list in this case. 
@@ -543,7 +585,7 @@ def final_multiorg_adjustment(df,result_col):
 
 def add_review_suggestion_flags(df,
                                 text_col,
-                                result_col):
+                                result_col='result_binary'):
     
     """
     attempt to add on some logical "manual review suggested" flags onto cases to reduce false positive/negative classifications. currently
@@ -584,18 +626,28 @@ def OHDSI_NAME_MAP(x):
     return(value)
 
 
-#changed from result_categorize_main-> rbmce
-def run(df, text_col_main='parsed_note', 
-                           staph_nunique_col='culture_id',#'procedure_order_key',
-                           culture_id_main='visit_id', 
-                           result_col_main='result_binary',
-                           visit_id='visit_id', #this should be changed if there are multiple cultures per visit.
-                           staph_neg_correction=True, 
-                           notetype_main=None, 
-                           quant_col=None, 
-                           specimen_col=None,
-                          likely_neg_to_neg_override=False):
+# #changed from result_categorize_main-> rbmce. orig:
+# def run(df, text_col_main='parsed_note', 
+#                            staph_nunique_col='culture_id',#'procedure_order_key',  ##formerly named staph_nunique_col
+#                            culture_id_main='visit_id',   ##formerly named culture_id_main
+#                            result_col_main='result_binary',
+#                            visit_id='visit_id', #this should be changed if there are multiple cultures per visit.
+#                            staph_neg_correction=True, 
+#                            notetype_main=None, 
+#                            quant_col=None, 
+#                            specimen_col=None,
+#                           likely_neg_to_neg_override=False):
     
+#adjusted:
+def run(df, text_col_main='parsed_note', 
+            culture_id_main='culture_id',#'procedure_order_key',  ##formerly named staph_nunique_col
+            visit_id_main='visit_id',   ##formerly named culture_id_main.  #this should be changed if there are multiple cultures per visit.
+            staph_neg_correction=True, 
+            notetype_main=None, 
+            quant_col=None, 
+            specimen_col=None,
+            likely_neg_to_neg_override=False):
+                            
     """
     function: execution function for all operations involved in the rule-based microbiology concept extractor. uses 6 step parsing:
     
@@ -641,6 +693,8 @@ def run(df, text_col_main='parsed_note',
     """
     from .regex_blocks import species_regex_list
     import time  
+    
+    result_col_main='result_binary'
     
     print('step0.1')
     #########step0.1: assign a baseline value for new columns to be overwritten:
@@ -761,11 +815,21 @@ def run(df, text_col_main='parsed_note',
     df= staph_classifier(df,coag_neg_correction=staph_neg_correction,
                          text_col=text_col_main, result_col=result_col_main, override_result=False) #doing staph parsings
     if staph_neg_correction==True:
-        df= staph_coag_neg_correction(df,
+                            ###del
+#         df= contamination_correction(df,
+#                                       text_col=text_col_main,
+#                                       result_col=result_col_main,
+#                                       time_col=staph_nunique_col,
+#                                       culture_id=visit_id
+#                                      ) ### accounting for multiple instances of staph coag negatives or other neg staph as contaminants
+                            
+                            
+#         ###adjustd:
+        df= contamination_correction(df,
                                       text_col=text_col_main,
                                       result_col=result_col_main,
-                                      time_col=staph_nunique_col,
-                                      culture_id=visit_id
+                                      culture_id=culture_id_main, #culture_id formerly usd to be time_col
+                                      visit_id=visit_id_main
                                      ) ### accounting for multiple instances of staph coag negatives or other neg staph as contaminants
         toc = time.perf_counter()
         print(f"staph classifier: {toc - tic:0.4f} seconds")

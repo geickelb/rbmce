@@ -147,4 +147,4 @@ cython_debug/
 /formatted_data/*
 /ignore_files/*
 untitled.txt
-
+/rbmce/parser_main.py

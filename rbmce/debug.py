@@ -15,19 +15,19 @@ def rbmce_str_in(str_input, staph_neg_correction=False, likely_neg_to_neg_overri
    'visit_id':1
       }
     df=pd.DataFrame(data=d, index=[1])
-       
-    df= run(df, 
-                                       text_col_main='parsed_note',
-                                       staph_nunique_col='culture_id',
-                                       result_col_main='result_binary',
-                                       culture_id_main='visit_id',
-                                       visit_id='visit_id', 
-                                       staph_neg_correction=False,
-                                       notetype_main=None,
-                                       quant_col=None, 
-                                       specimen_col=None,
-                                       likely_neg_to_neg_override=True)
 
+    
+    df= run(df, 
+            text_col_main='parsed_note', 
+            culture_id_main='culture_id',#'procedure_order_key',  ##formerly named staph_nunique_col
+            visit_id_main='visit_id',   ##formerly named culture_id_main.  #this should be changed if there are multiple cultures per visit.
+            staph_neg_correction=False, 
+            notetype_main=None, 
+            quant_col=None, 
+            specimen_col=None,
+            likely_neg_to_neg_override=True)
+    
+    
     df=df.drop(columns=['culture_id','visit_id'])
     print(df.iloc[:,:8])
     print()
@@ -43,8 +43,6 @@ def main():
     import sys
     
     n = len(sys.argv[1:])
-#     print(n)
-#     print(sys.argv[1:])
     
     arg_processed=''
     if n>1:
@@ -55,15 +53,7 @@ def main():
     else:
         arg_processed= sys.argv[1]
 
-        
     rbmce_str_in(arg_processed)
-#     print(arg_processed)
-    
-#     str_input = input("Enter note text to process :")
-#     if str_input is None:
-#         str_input='No Salmonella, Shigella, Campylobacter, Aeromonas or Plesiomonas isolated.'
-#     rbmce_str_in(str_input)
-    
     
     
 if __name__ == "__main__":
