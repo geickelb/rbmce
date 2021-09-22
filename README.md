@@ -2,7 +2,7 @@
 
 </h1>
 <p>
-<img alt="Version" src="https://img.shields.io/badge/version-0.0.1-blue.svg?cacheSeconds=2592000" />
+<img alt="Version" src="https://img.shields.io/badge/version-0.0.2-blue.svg?cacheSeconds=2592000" />
 <a href="https://github.com/pedroermarinho/markdown-readme-generator#readme" target="_blank"><img alt="Documentation" src="https://img.shields.io/badge/documentation-yes-brightgreen.svg" /></a>
 <a href="https://github.com/pedroermarinho/markdown-readme-generator/graphs/commit-activity" target="_blank"><img alt="Maintenance" src="https://img.shields.io/badge/Maintained%3F-yes-green.svg" /></a>
 <a href="https://github.com/pedroermarinho/markdown-readme-generator/blob/master/LICENSE" target="_blank"><img alt="License:MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
@@ -36,11 +36,13 @@ the rbcme.run() function expects a pandas dataframe with the following elements 
 
 * parsed_note: 
     * microbiology report txt in either a raw or (**perferable) chopped up into components (eg gram stain/growth report/ab susceptability)
-* cuture_id: 
+* culture_id: 
     * a primary key tied to a given sample/specimen + microbiological exam order. 
     * Often a microbiology order can be tied to numerous components (eg gram stain/growth report/ ab susceptability). additionally these can be appended to same report or added as a new report tied to same sample + order. all of these tied to a sample+order should share same culture_id
 * visit_id:
-    * in some datasets
+    * primary key for patient's visit/encounter
+    * can be 1-many:1 to culture_id or 1:1 (in which case can specify as culture_id)
+    * in some datasets a patient may have multiple cultures performed in a visit/encounter. 
 
 #### Inline:
 ```sh
@@ -52,10 +54,7 @@ rbmce.run(df)
 
 ```
 #### Command Line:
-```
 see rbcme_run_example.py for example of an executable python file to import, format, process w/ rbmce, and save outputs (annotated dataframe, markdown_summary file)
-
-```
 
 
 ## Run tests

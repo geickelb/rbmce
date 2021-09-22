@@ -100,7 +100,7 @@ def run_t1():
     latex_report(df_name, annotated_df,n_latex_rows )
     
         
-    annotated_df= result_categorize_main(df,
+    annotated_df= rbmce.run(df,
                                        text_col_main='lab_result',
                                        staph_nunique_col='culture_id',
                                        result_col_main='result_binary',
