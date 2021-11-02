@@ -1,0 +1,90 @@
+culture_id,visit_id,parsed_note
+0,0,Many species present
+1,1,alpha hemolytic streptococci in anaerobic bottle
+1,1,coagulase negative Staphylococcus species in bottle with antibiotic removal resin
+1,1,gram positive cocci in clusters in bottle with antibiotic removal resin
+1,1,gram positive cocci in pairs and chains in anaerobic bottle
+2,2,submitting a repeat specimen.
+2,2,Culture terminated due to overgrowth with an unrelated organism. Consider
+3,3,gram positive cocci in clusters in bottle with antibiotic removal resin
+3,3,coagulase negative Staphylococcus species strain 2 in bottle with antibiotic
+3,3,non-hemolytic streptococci in anaerobic bottle
+3,3,coagulase negative Staphylococcus species strain 1 in bottle with antibiotic
+3,3,gram positive cocci in chains in anaerobic bottle
+3,3,LDK
+3,3,removal resin
+3,3,removal resin
+4,4,Klebsiella pneumoniae in aerobic and anaerobic bottles
+4,4,gram negative bacilli in aerobic and anaerobic bottles
+5,5,Many Pseudomonas aeruginosa
+5,5,Many Klebsiella pneumoniae
+5,5,Many Acinetobacter baumanii
+6,6,Klebsiella pneumoniae in aerobic and anaerobic bottles
+6,6,gram negative bacilli in aerobic and anaerobic bottles
+7,7,gram negative bacilli in bottle with antibiotic removal resin
+7,7,Klebsiella pneumoniae in bottle with antibiotic removal resin
+7,7,Klebsiella pneumoniae strain 2 in anaerobic bottle
+7,7,gram negative bacilli in anaerobic bottle
+8,8,Many species present
+9,9,Moderate Achromobacter (Alcaligenes) xylosoxidans
+9,9,Moderate Pseudomonas aeruginosa strain 2
+9,9,Moderate Pseudomonas aeruginosa strain 3
+9,9,Many Pseudomonas aeruginosa strain 1
+9,9,Moderate Pseudomonas aeruginosa strain 4
+10,10,Many methicillin resistant Staphylococcus aureus D test negative.
+11,11,"Less than 10,000 organisms/ml"
+12,12,No sample received for test
+13,13,"No Salmonella, Shigella or Campylobacter isolated"
+14,14,submitting a repeat specimen.
+14,14,Culture terminated due to overgrowth with an unrelated organism. Consider
+15,15,CORRECTED REPORT: AZTREONAM SUSCEPTIBLE STRAIN 2
+15,15,Many Pseudomonas aeruginosa strain 2
+15,15,Many Pseudomonas aeruginosa strain 3
+15,15,Many Pseudomonas aeruginosa
+15,15,Previous results: AZTREONAM RESISTANT STRAIN 2
+16,16,alpha hemolytic streptococci in bottle with antibiotic removal resin
+16,16,gram negative bacilli in aerobic and anaerobic bottles
+16,16,SYNERGY likely between gentamicin or streptomycin and ampicillin or vancomycin
+16,16,Aminoglycosides alone are not effective against enterococci. For this isolate
+16,16,Klebsiella oxytoca in aerobic and anaerobic bottles
+17,17,tetracycline or nitrofurantoin generally considered useful. Contact lab if
+17,17,"> 100,000/ml Enterococcus sp. UTI isolates not routinely tested for"
+18,18,Klebsiella oxytoca in aerobic and anaerobic bottles
+19,19,Klebsiella oxytoca in anaerobic bottle
+19,19,gram negative bacilli in anaerobic bottle
+20,20,Enterococcus faecalis in aerobic and anaerobic bottles
+20,20,SYNERGY likely between gentamicin or streptomycin and ampicillin or vancomycin
+20,20,gram positive cocci in pairs and chains in aerobic and anaerobic bottles
+21,21,Klebsiella pneumoniae in bottle with antibiotic removal resin
+22,22,"No Salmonella, Shigella or Campylobacter isolated"
+23,23,"Less than 10,000 organisms/ml"
+24,24,"No Salmonella, Shigella or Campylobacter isolated"
+25,25,"> 100,000/ml Escherichia coli"
+26,26,gram positive cocci in clusters in bottle with antibiotic removal resin
+26,26,coagulase negative Staphylococcus species in bottle with antibiotic removal resin
+27,27,Few Stenotrophomonas maltophilia
+27,27,Few Acinetobacter species
+28,28,Moderate Stenotrophomonas maltophilia
+29,29,Few Stenotrophomonas maltophilia
+30,30,Rare Achromobacter (Alcaligenes) xylosoxidans
+30,30,Few Stenotrophomonas maltophilia
+31,31,Few Stenotrophomonas maltophilia
+32,32,Many Stenotrophomonas maltophilia
+33,33,Few Achromobacter (Alcaligenes) xylosoxidans
+33,33,Few Stenotrophomonas maltophilia
+34,34,"No Salmonella, Shigella or Campylobacter isolated"
+35,35,Many species present
+36,36,Moderate Klebsiella oxytoca
+36,36,Moderate Haemophilus influenzae beta lactamase negative
+37,37,"Less than 10,000 organisms/ml"
+38,38,Many Streptococcus pneumoniae
+39,39,"No staphylococcus aureus, pseudomonas aeruginosa, beta streptococci, or enterococci isolated"
+39,39,Four or more strains of aerobic gram positive organisms present
+40,40,Mixed gram negative bacilli
+40,40,Moderate Pseudomonas aeruginosa
+41,41,"No Salmonella, Shigella or Campylobacter isolated"
+42,42,Moderate Pseudomonas aeruginosa
+42,42,Mixed gram negative bacilli
+43,43,Moderate methicillin resistant Staphylococcus aureus D test negative.
+43,43,Many Pseudomonas aeruginosa strain 2
+43,43,Many Pseudomonas aeruginosa strain 1

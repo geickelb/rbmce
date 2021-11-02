@@ -49,21 +49,7 @@ value_map_dict={
     'CNS': 'coagulase negative staphylococci'   
 }
 
-# same idea as above but targets the most prevelent bacteria in the abbreviated species format to map to full name format
-# value_map_dict2={
-#     'k. pneumoniae': 'klebsiella pneumoniae',
-#     'e. coli': 'escherichia coli',
-#     'e. cloacae': 'enterobacter cloacae',
-#     'a. baumannii': 'acinetobacter baumannii',
-#     's. aureus': 'staphylococcus aureus',
-#     's. pyogenes': 'streptococcus pyogenes',
-#     'p. aeruginosa': 'pseudomonas aeruginosa',
-#     'ps. aeruginosa': 'pseudomonas aeruginosa',
-#     'h. influenzae': 'haemophilus influenzae',
-#     'm. catarrhalis': 'moraxella catarrhalis',
-#     'l. pneumophila': 'legionella pneumophila',
-#     'la pneumophila': 'legionella pneumophila',
-# }
+
 value_map_dict2={
     
     r'\bk\.\b pneumoniae': 'klebsiella pneumoniae',
@@ -96,9 +82,8 @@ value_map_dict2={
 
 #### synonyms for detected in cultures: (present|isolated|detected|grown|seen|cultured)
 
-
 #####quant_regex_list: list of regular expressions designed to capture quantitative information regarding bacterial counts
-##### note: the captured groups here are descriptive and do not impact infection status categorization.
+##### note: the captured groups here are descriptive and do not impact bacteria positive status categorization.
 
 quant_regex_list=[
     r'\b[\d,]{2,}\s?[\d,]*\b(\s?cfu\/ml)?', #most greedy, goes first and gets overwritten by more specific.
@@ -112,7 +97,7 @@ quant_regex_list=[
 ]
 
 #####specimen_regex_list: list of regular expressions designed to capture info regarding sample type or sample specimen. eg blood culture.
-##### note: the captured groups here are descriptive and do not impact infection status categorization.
+##### note: the captured groups here are descriptive and do not impact bacteria positive status categorization.
 
 specimen_regex_list= [
      r'\b\w*\b\sculture', #most greedy
@@ -133,7 +118,6 @@ specimen_regex_list= [
 ##### note: the captured groups here DO impact classification.
 
 negative_regex_list=[
-                    # r'negative for growth',
                      r'negative for', #making this a seperate one for debugging
                      r'no\sgrowth',
                      r'no acid fast bacilli',
@@ -143,14 +127,10 @@ negative_regex_list=[
 #                      r'\bnormal\sflora\b',
                      r'(?<!\bno\b\s)(?<!\bnot\b\s)\bnormal\sflora\b',
     
-    
-#                      r'no\s+([a-zA-Z]+\s*){1,4}((\bisolated\b)|(\bfound\b)|(\bgrow[nth]{1,2}\b)|(\bseen\b)|(\bpresent\b)|(\bdetected\b)|(\bgrown\b)|(\bseen\b)|(\bcultured\b))',
                      #### 8/23/21: changed the \s*->\s+ so that it doesn't capture words starting with no... and requires a space and can't be no normal flora.
-#                      r'no\s+([a-zA-Z]+\s*){1,4}((\bisolated\b)|(\bfound\b)|(\bgrow[nth]{1,2}\b)|(\bseen\b)|(\bpresent\b)|(\bdetected\b)|(\bgrown\b)|(\bseen\b)|(\bcultured\b))',
+
                     r'no\s+(?!normal flora)([a-zA-Z]+\s*){1,4}((\bisolated\b)|(\bfound\b)|(\bgrow[nth]{1,2}\b)|(\bseen\b)|(\bpresent\b)|(\bdetected\b)|(\bgrown\b)|(\bseen\b)|(\bcultured\b))',
 
-                     #r'no\s*([a-zA-Z]+\s*){1,4}((\bisolated\b)|(\bfound\b)|(\bgrow[nth]{1,2}\b)|(\bseen\b))', #removed starting position parameter
-    
                      ####8/23/21: changed to improve specificity. remove capturing "no normal xxx flora"
 #                      r'normal\s(\s?\w{2,}\s)flora',
                      r'(?<!\bno\b\s)(?<!\bnot\b\s)\bnormal\s(\s?\w{2,}\s)flora',
@@ -163,19 +143,16 @@ negative_regex_list=[
                       ###8/23/21: increased specificity of not detected|indicated to avoid the results specifically referring to antibiotic resistance results. 
 #                      r'not\sdetected|indicated',
                      r'(?<!resistance)(?<!susceptibility)\s+not\sdetected|indicated',
-    
-    
-    
                      r':\snegative$', # added to account for a heading with the name of a species: negative. 
                      r'no\s(predominant|prevelant|identifyable|isolated)\s(organism|bacteria|colony|growth)', #covers some fairly niche language
                      r'parasite',
                      r'(?<!un)usual\s(\s?\w{2,}\s)flora', #usual respiratory flora, with protection against unusual
-                     #r'normal\s(\s?\w{2,}\s)flora' #normal flora with accomodation of 
    
                        ### 8/23/21 adding a narrow catch for the single line of "no normal flora present", as this alone is inconclusive
                      r'^no normal flora\s?((\bisolated\b)|(\bfound\b)|(\bgrow[nth]{1,2}\b)|(\bseen\b)|(\bpresent\b)|(\bdetected\b)|(\bgrown\b)|(\bseen\b)|(\bcultured\b)|(\bidentified\b))?$',
                     ]
 
+#virus and yeast list not compiled from comprehensive knowledge source nor have been validated. included for very basic captures to distinguish between viral/yeast positive vs bacteria. 
 virus_regex_list=[r'virus|influenza[\s$^]+',
                   r'vzv|hsv|hpv',
                   r'herpes',
@@ -485,8 +462,7 @@ likely_negative_regex_list=[r'\b(few|rare)\b',
                 r'(<=?|less than|\blt\b)\s?\b[\d,]*\s?\b(\s?cfu\/ml|colonies|colony)', #improved above regex to be more specific.
                 r'(light)\s?(?=growth)',
                 r'no\s(?=.{0,75},).{0,75},(?=.{0,75}or).{0,75}or(?=(.*?\s.+?isolated)|(.*?\s.+?detected)).*?\.?' #updated multineg, now only works if , + or + detected|isolated are within same sentence. 
-                            #r'no\s(?=.{0,100},)(?=.{0,100}or)(?=.{0,100}\s(isolated|detected))'
-                            #r'no\s(?=.*,)(?=.*or)(?=.*\s(isolated|detected))' #this was origionalyl labeled as a multi-neg. now moved to a likely neg for cohesion
+                         
                            ]
 
 
